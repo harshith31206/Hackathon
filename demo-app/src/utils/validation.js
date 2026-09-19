@@ -21,7 +21,6 @@ export function validateRegistration(username, email, password) {
     errors.email = "Valid email is required.";
   }
 
-  // Enhanced password strength validation per AUTO-101 requirements
   const passwordError = validatePasswordStrength(password);
   if (passwordError) {
     errors.password = passwordError;
