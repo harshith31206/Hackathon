@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Sidebar } from './components/Sidebar';
-import { WorkItemForm } from './components/WorkItemForm';
-import { LivePipelineFooter } from './components/LivePipelineFooter';
-import { TicketCard } from './components/TicketCard';
-import { ActivityLog } from './components/ActivityLog';
-import { CodeDiffViewer } from './components/CodeDiffViewer';
-import { ApprovalPanel } from './components/ApprovalPanel';
-import { PRResultCard } from './components/PRResultCard';
+import { Navigation } from './components/Navigation';
+import { TopHeader } from './components/TopHeader';
+import { DashboardScreen } from './screens/DashboardScreen';
+import { CreateAutoPRScreen } from './screens/CreateAutoPRScreen';
+import { LiveAgentRunScreen } from './screens/LiveAgentRunScreen';
+import { CodeDiffScreen } from './screens/CodeDiffScreen';
+import { PullRequestsScreen } from './screens/PullRequestsScreen';
+import { JiraTicketsScreen } from './screens/JiraTicketsScreen';
+import { RepositoriesScreen } from './screens/RepositoriesScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
+import { MOCK_TICKETS } from './mockData';
 
-const API_BASE = 'http://localhost:8001/api';
+const API_BASE = 'http://localhost:8000/api';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('new-task');
+  const [activeScreen, setActiveScreen] = useState('live_run');
   const [ticketId, setTicketId] = useState('AUTO-101');
+  const [repoUrl, setRepoUrl] = useState('harshith31206/Hackathon');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tickets, setTickets] = useState(MOCK_TICKETS);
+
   const [pipelineState, setPipelineState] = useState({
-    ticket_id: null,
+    ticket_id: 'AUTO-101',
     current_step: 0,
     status: 'IDLE',
     ticket: null,
@@ -27,9 +34,29 @@ export default function App() {
     jira_result: null,
     logs: []
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Poll status when running or awaiting approval
+  // Fetch initial status on component mount
+  useEffect(() => {
+    const fetchInitialStatus = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/status`);
+        if (res.data && res.data.status) {
+          setPipelineState(res.data);
+          if (res.data.ticket_id) {
+            setTicketId(res.data.ticket_id);
+          }
+          if (res.data.repo_url) {
+            setRepoUrl(res.data.repo_url);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load initial status:", e);
+      }
+    };
+    fetchInitialStatus();
+  }, []);
+
+  // Poll status when running
   useEffect(() => {
     let interval = null;
     if (pipelineState.status === 'RUNNING') {
@@ -45,19 +72,31 @@ export default function App() {
     return () => clearInterval(interval);
   }, [pipelineState.status]);
 
-  const handleRunAgent = async (selectedTicketId, repoUrl, customDescription) => {
+  // Handle agent start from Create or Dashboard
+  const handleStartAgent = async (selectedTicketId, selectedRepoUrl, customDescription, options = {}) => {
     setIsSubmitting(true);
+    setTicketId(selectedTicketId);
+    setRepoUrl(selectedRepoUrl || 'harshith31206/Hackathon');
+    setActiveScreen('live_run');
+
     try {
       const res = await axios.post(`${API_BASE}/run`, {
         ticket_id: selectedTicketId,
-        repo_url: repoUrl,
-        custom_description: customDescription
+        repo_url: selectedRepoUrl || 'harshith31206/Hackathon',
+        custom_description: customDescription,
+        jira_url: options.jiraUrl,
+        jira_email: options.jiraEmail?.trim() || undefined,
+        jira_token: options.jiraToken?.trim() || undefined,
+        custom_knowledge: options.customKnowledge?.trim() || undefined,
+        document_name: options.documentName?.trim() || undefined,
+        auto_approve: options.autoApprove !== undefined ? options.autoApprove : true
       });
       if (res.data && res.data.state) {
         setPipelineState(res.data.state);
+        return res.data.state;
       }
     } catch (e) {
-      alert("Failed to start AutoPR agent. Is the backend server running on port 8001?");
+      console.warn("Backend not running or error starting agent, using visual interactive runner:", e);
     } finally {
       setIsSubmitting(false);
     }
@@ -71,7 +110,7 @@ export default function App() {
         setPipelineState(res.data.state);
       }
     } catch (e) {
-      alert("Failed to submit approval.");
+      alert("Failed to submit approval to backend.");
     } finally {
       setIsSubmitting(false);
     }
@@ -85,93 +124,136 @@ export default function App() {
         setPipelineState(res.data.state);
       }
     } catch (e) {
-      alert("Failed to submit rejection.");
+      console.warn("Rejection recorded locally.");
+      setPipelineState(prev => ({ ...prev, status: 'REJECTED' }));
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handlePause = async () => {
+    try {
+      const res = await axios.post(`${API_BASE}/pause`);
+      if (res.data && res.data.state) {
+        setPipelineState(res.data.state);
+      }
+    } catch (e) {
+      console.warn("Pause called:", e);
+      setPipelineState(prev => ({ ...prev, status: 'PAUSED' }));
+    }
+  };
+
+  const handleResume = async () => {
+    try {
+      const res = await axios.post(`${API_BASE}/resume`);
+      if (res.data && res.data.state) {
+        setPipelineState(res.data.state);
+      }
+    } catch (e) {
+      console.warn("Resume called:", e);
+      setPipelineState(prev => ({ ...prev, status: 'RUNNING' }));
+    }
+  };
+
+  const [customDesc, setCustomDesc] = useState('');
+
+  const handleLaunchAutoPR = (id, repo, desc) => {
+    if (id) setTicketId(id);
+    if (repo) setRepoUrl(repo);
+    if (desc) setCustomDesc(desc);
+    setActiveScreen('create');
+  };
+
+  const handleViewDiff = (id) => {
+    if (id) setTicketId(id);
+    setActiveScreen('diff');
+  };
+
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#0b0f19' }}>
-      {/* Left Navigation Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="flex h-screen w-screen overflow-hidden bg-[#f8fafc]">
+      {/* Left Dark Navy Navigation Sidebar */}
+      <Navigation
+        activeScreen={activeScreen}
+        setActiveScreen={setActiveScreen}
+        isRunning={pipelineState.status === 'RUNNING'}
+        pipelineStage={pipelineState.current_step + 1}
+      />
 
       {/* Main App Container */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto' }}>
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Top Header Bar */}
-        <header
-          style={{
-            background: 'rgba(15, 23, 42, 0.8)',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            padding: '16px 28px',
-            display: 'flex',
-            alignItems: 'center',
-            justify: 'space-between'
-          }}
-        >
-          <div>
-            <h1 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#f8fafc' }}>AutoPR-UX</h1>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Autonomous Software Development & Testing</span>
-          </div>
+        <TopHeader
+          activeScreen={activeScreen}
+          setActiveScreen={setActiveScreen}
+          isRunning={pipelineState.status === 'RUNNING'}
+          pipelineStatus={pipelineState.status}
+        />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span
-              style={{
-                display: 'inline-block',
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                background: pipelineState.status === 'RUNNING' ? '#3b82f6' : '#10b981'
-              }}
+        {/* Scrollable Screen Content */}
+        <main className="flex-1 overflow-y-auto p-8 bg-[#f8fafc]">
+          {activeScreen === 'dashboard' && (
+            <DashboardScreen
+              onLaunchAutoPR={handleLaunchAutoPR}
+              onViewDiff={handleViewDiff}
+              onSelectTicket={handleLaunchAutoPR}
             />
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0' }}>
-              {pipelineState.status === 'RUNNING' ? 'Agent Running' : 'System Ready'}
-            </span>
-          </div>
-        </header>
+          )}
 
-        {/* Workspace Body */}
-        <main style={{ flex: 1, padding: '28px', overflowY: 'auto' }}>
-          <WorkItemForm
-            onStartAgent={handleRunAgent}
-            isRunning={pipelineState.status === 'RUNNING'}
-            ticketId={ticketId}
-            setTicketId={setTicketId}
-          />
+          {activeScreen === 'create' && (
+            <CreateAutoPRScreen
+              onStartAgent={handleStartAgent}
+              isRunning={pipelineState.status === 'RUNNING' || isSubmitting}
+              defaultTicketId={ticketId}
+              defaultRepo={repoUrl}
+              defaultDesc={customDesc}
+            />
+          )}
 
-          {pipelineState.status === 'AWAITING_APPROVAL' && (
-            <ApprovalPanel
+          {activeScreen === 'live_run' && (
+            <LiveAgentRunScreen
+              pipelineState={pipelineState}
               onApprove={handleApprove}
               onReject={handleReject}
+              onPause={handlePause}
+              onResume={handleResume}
               isSubmitting={isSubmitting}
+              onViewDiff={handleViewDiff}
+              ticketId={ticketId}
+              repoUrl={repoUrl}
+              tickets={tickets}
+              setTickets={setTickets}
+              onStartAgent={handleStartAgent}
             />
           )}
 
-          {pipelineState.status === 'COMPLETED' && (
-            <PRResultCard
-              prResult={pipelineState.pr_result}
-              jiraResult={pipelineState.jira_result}
+          {activeScreen === 'diff' && (
+            <CodeDiffScreen
+              codeChanges={pipelineState.code_changes}
+              ticketId={ticketId}
             />
           )}
 
-          {/* Active Workspace Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '20px', marginBottom: '20px' }}>
-            <div style={{ gridColumn: 'span 6' }}>
-              <TicketCard ticket={pipelineState.ticket} />
-            </div>
-            <div style={{ gridColumn: 'span 6' }}>
-              <ActivityLog logs={pipelineState.logs} />
-            </div>
-          </div>
+          {activeScreen === 'prs' && (
+            <PullRequestsScreen
+              onViewDiff={handleViewDiff}
+            />
+          )}
 
-          {/* Code Diff Viewer */}
-          <CodeDiffViewer codeChanges={pipelineState.code_changes} />
+          {activeScreen === 'jira' && (
+            <JiraTicketsScreen
+              onLaunchTicket={handleLaunchAutoPR}
+              tickets={tickets}
+              setTickets={setTickets}
+            />
+          )}
 
-          {/* Live Pipeline Footer */}
-          <LivePipelineFooter
-            currentStep={pipelineState.current_step}
-            status={pipelineState.status}
-          />
+          {activeScreen === 'repos' && (
+            <RepositoriesScreen />
+          )}
+
+          {activeScreen === 'settings' && (
+            <SettingsScreen />
+          )}
         </main>
       </div>
     </div>

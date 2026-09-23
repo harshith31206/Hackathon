@@ -3,14 +3,15 @@ import { CheckCircle2, Clock, Loader2, AlertCircle } from 'lucide-react';
 
 const STEPS = [
   { id: 1, label: 'Receive Work Item' },
-  { id: 2, label: 'Understand Requirement' },
-  { id: 3, label: 'Repo Context' },
+  { id: 2, label: 'Ingest BRDs & Rules' },
+  { id: 3, label: 'Requirement Spec' },
   { id: 4, label: 'Codebase Analysis' },
   { id: 5, label: 'Create Plan' },
   { id: 6, label: 'Implement Code' },
-  { id: 7, label: 'Human Approval' },
-  { id: 8, label: 'GitHub PR' },
-  { id: 9, label: 'Jira Update' }
+  { id: 7, label: 'Docker Sandbox & ReAct' },
+  { id: 8, label: 'Human Approval' },
+  { id: 9, label: 'GitHub PR' },
+  { id: 10, label: 'Jira Update' }
 ];
 
 export function PipelineStepper({ currentStep, status }) {

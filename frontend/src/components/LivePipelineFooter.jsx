@@ -11,12 +11,12 @@ export function LivePipelineFooter({ currentStep, status }) {
   // 10: Fix / Complete
 
   const pipelineSteps = [
-    { label: 'Requirement', minStep: 2 },
-    { label: 'Context', minStep: 4 },
-    { label: 'Code', minStep: 6 },
-    { label: 'PR', minStep: 8 },
-    { label: 'UI Test', minStep: 9 },
-    { label: 'Fix / Verify', minStep: 10 }
+    { label: 'BRD Context', minStep: 3 },
+    { label: 'Code Gen', minStep: 6 },
+    { label: 'Docker Sandbox', minStep: 8 },
+    { label: 'Human Review', minStep: 9 },
+    { label: 'GitHub PR', minStep: 10 },
+    { label: 'Jira Update', minStep: 11 }
   ];
 
   return (

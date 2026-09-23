@@ -1,57 +1,61 @@
-import React, { useState } from 'react';
-import { Bot, Play, RefreshCw } from 'lucide-react';
+import React from 'react';
+import { Cpu, Sparkles, CheckCircle2 } from 'lucide-react';
 
-export function Header({ ticketId, setTicketId, onRun, status, isRunning }) {
-  const [inputVal, setInputVal] = useState(ticketId);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (inputVal.trim()) {
-      setTicketId(inputVal.trim());
-      onRun(inputVal.trim());
-    }
-  };
+export function Header({ status = 'IDLE', llmModel = 'qwen3-coder:30b / Gemini Flash' }) {
+  const isRunning = status === 'RUNNING';
 
   return (
-    <header className="glass-card" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', padding: '10px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Bot size={28} color="#fff" />
-        </div>
-        <div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, letterSpacing: '-0.5px' }}>AutoPR</h1>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Autonomous Software Engineering Agent</p>
-        </div>
+    <header style={{
+      background: '#ffffff',
+      borderBottom: '1px solid #e2e8f0',
+      padding: '12px 32px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      position: 'sticky',
+      top: 0,
+      zIndex: 10
+    }}>
+      {/* Left Title / Breadcrumb */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>
+          Dashboard
+        </span>
+        <span style={{ color: '#cbd5e1' }}>/</span>
+        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>
+          Overview
+        </span>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ position: 'relative' }}>
-          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>TICKET:</span>
-          <input
-            type="text"
-            value={inputVal}
-            onChange={(e) => setInputVal(e.target.value.toUpperCase())}
-            placeholder="AUTO-101"
-            style={{
-              background: 'rgba(0, 0, 0, 0.4)',
-              border: '1px solid var(--bg-card-border)',
-              borderRadius: '8px',
-              color: '#fff',
-              padding: '10px 12px 10px 76px',
-              fontSize: '0.95rem',
-              fontWeight: 600,
-              fontFamily: 'var(--font-mono)',
-              width: '180px',
-              outline: 'none'
-            }}
-          />
-        </div>
-
-        <button type="submit" className="btn-primary" disabled={isRunning}>
-          {isRunning ? <RefreshCw size={18} className="spin" /> : <Play size={18} />}
-          <span>{isRunning ? 'Agent Running...' : 'Run AutoPR Agent'}</span>
-        </button>
-      </form>
+      {/* Right LLM Status Pill (exact mockup style) */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        background: '#f8fafc',
+        border: '1px solid #e2e8f0',
+        padding: '6px 14px',
+        borderRadius: '999px',
+        fontSize: '0.78rem',
+        fontWeight: 600,
+        color: '#334155'
+      }}>
+        <span style={{
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          background: isRunning ? '#3b82f6' : '#10b981',
+          boxShadow: isRunning ? '0 0 6px #3b82f6' : '0 0 6px #10b981',
+          display: 'inline-block'
+        }} />
+        <span>Local LLM Connected</span>
+        <span style={{ color: '#cbd5e1' }}>|</span>
+        <span style={{ color: '#64748b' }}>Ollama</span>
+        <span style={{ color: '#cbd5e1' }}>|</span>
+        <span style={{ fontFamily: 'var(--font-mono)', color: '#2563eb', fontWeight: 700 }}>
+          {llmModel}
+        </span>
+      </div>
     </header>
   );
 }

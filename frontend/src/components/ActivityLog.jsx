@@ -33,11 +33,22 @@ export function ActivityLog({ logs }) {
         }}
       >
         {logs && logs.length > 0 ? (
-          logs.map((log, index) => (
-            <div key={index} style={{ marginBottom: '6px', lineHeight: '1.4' }}>
-              {log}
-            </div>
-          ))
+          logs.map((log, index) => {
+            let textColor = '#d1d5db';
+            if (log.includes('[Thought]')) textColor = '#c084fc';
+            else if (log.includes('[Action]')) textColor = '#60a5fa';
+            else if (log.includes('[Observation]')) textColor = '#38bdf8';
+            else if (log.includes('[Docker Sandbox]')) textColor = '#2dd4bf';
+            else if (log.includes('[ContextRetriever]')) textColor = '#a7f3d0';
+            else if (log.includes('[Success]')) textColor = '#4ade80';
+            else if (log.includes('[Warning]')) textColor = '#facc15';
+
+            return (
+              <div key={index} style={{ marginBottom: '6px', lineHeight: '1.4', color: textColor }}>
+                {log}
+              </div>
+            );
+          })
         ) : (
           <span style={{ color: 'var(--text-muted)' }}>No activity logs yet. Run AutoPR to start pipeline.</span>
         )}

@@ -1,157 +1,191 @@
 import React from 'react';
-import { FolderGit2, FileText, Code2, TestTube2, PlusCircle, History, Bot } from 'lucide-react';
+import { 
+  Home, 
+  Ticket, 
+  GitFork, 
+  GitPullRequest, 
+  Settings, 
+  Bot, 
+  Sparkles, 
+  ChevronDown 
+} from 'lucide-react';
 
 export function Sidebar({ activeTab, setActiveTab }) {
+  const navItems = [
+    { id: 'home', label: 'Home', icon: Home },
+    { id: 'jira', label: 'Jira Tickets', icon: Ticket },
+    { id: 'repos', label: 'Repositories', icon: GitFork },
+    { id: 'prs', label: 'Pull Requests', icon: GitPullRequest },
+    { id: 'settings', label: 'Settings', icon: Settings }
+  ];
+
   return (
     <aside
       style={{
         width: '240px',
-        background: 'rgba(15, 23, 42, 0.85)',
-        borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-        padding: '20px 16px',
+        background: '#0b1329',
+        borderRight: '1px solid rgba(255, 255, 255, 0.06)',
         display: 'flex',
         flexDirection: 'column',
-        justify: 'space-between',
-        height: '100%'
+        justifyContent: 'space-between',
+        height: '100vh',
+        padding: '24px 16px',
+        flexShrink: 0
       }}
     >
       <div>
-        {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px', paddingLeft: '8px' }}>
-          <div style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
-            <Bot size={22} color="#fff" />
+        {/* Brand Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', paddingLeft: '8px' }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+          }}>
+            <Sparkles size={20} color="#ffffff" />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '-0.3px', color: '#fff' }}>AutoPR-UX</h2>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>Autonomous Dev Agent</span>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.4px', margin: 0, lineHeight: 1.2 }}>
+              AutoPR
+            </h1>
+            <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 500 }}>
+              From Jira to Pull Request
+            </span>
           </div>
         </div>
 
-        {/* PROJECT SECTION */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '10px', paddingLeft: '8px' }}>
-            PROJECT
+        {/* Navigation Items */}
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id || (item.id === 'home' && (!activeTab || activeTab === 'new-task'));
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  padding: '11px 14px',
+                  borderRadius: '10px',
+                  background: isActive ? '#2563eb' : 'transparent',
+                  color: isActive ? '#ffffff' : '#94a3b8',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.88rem',
+                  fontWeight: isActive ? 600 : 500,
+                  transition: 'all 0.15s ease',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.color = '#e2e8f0';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#94a3b8';
+                  }
+                }}
+              >
+                <Icon size={18} color={isActive ? '#ffffff' : '#94a3b8'} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Bottom Profile & AI Status Card */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {/* AI Agent Status Card */}
+        <div style={{
+          background: '#131d38',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '12px',
+          padding: '14px',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '12px'
+        }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            background: 'rgba(59, 130, 246, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <Bot size={18} color="#60a5fa" />
           </div>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <button
-              onClick={() => setActiveTab('project')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                background: activeTab === 'project' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                color: activeTab === 'project' ? '#60a5fa' : '#94a3b8',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 500,
-                textAlign: 'left'
-              }}
-            >
-              <FolderGit2 size={16} /> Project Overview
-            </button>
-            <button
-              onClick={() => setActiveTab('context')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '8px 12px 8px 28px',
-                borderRadius: '6px',
-                background: activeTab === 'context' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                color: activeTab === 'context' ? '#60a5fa' : '#94a3b8',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 500
-              }}
-            >
-              <FileText size={15} /> Context
-            </button>
-            <button
-              onClick={() => setActiveTab('code')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '8px 12px 8px 28px',
-                borderRadius: '6px',
-                background: activeTab === 'code' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                color: activeTab === 'code' ? '#60a5fa' : '#94a3b8',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 500
-              }}
-            >
-              <Code2 size={15} /> Code Diffs
-            </button>
-            <button
-              onClick={() => setActiveTab('tests')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '8px 12px 8px 28px',
-                borderRadius: '6px',
-                background: activeTab === 'tests' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                color: activeTab === 'tests' ? '#60a5fa' : '#94a3b8',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 500
-              }}
-            >
-              <TestTube2 size={15} /> Tests
-            </button>
-          </nav>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', marginBottom: '2px' }}>
+              AI Agent
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#94a3b8', lineHeight: 1.3, marginBottom: '8px' }}>
+              Powered by Qwen3-Coder / Gemini
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                background: '#10b981',
+                boxShadow: '0 0 6px #10b981'
+              }} />
+              <span style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: 600 }}>
+                Running
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* WORKFLOWS SECTION */}
-        <div>
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '10px', paddingLeft: '8px' }}>
-            WORKFLOWS
+        {/* User Account Pill */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 10px',
+          borderRadius: '10px',
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          cursor: 'pointer'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: '#2563eb',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              fontSize: '0.88rem'
+            }}>
+              S
+            </div>
+            <div>
+              <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#f8fafc' }}>
+                Sri Harshith
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                Developer
+              </div>
+            </div>
           </div>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <button
-              onClick={() => setActiveTab('new-task')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                background: activeTab === 'new-task' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                color: activeTab === 'new-task' ? '#60a5fa' : '#94a3b8',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 500
-              }}
-            >
-              <PlusCircle size={16} /> + New Task
-            </button>
-            <button
-              onClick={() => setActiveTab('history')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                background: activeTab === 'history' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                color: activeTab === 'history' ? '#60a5fa' : '#94a3b8',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 500
-              }}
-            >
-              <History size={16} /> 📋 History
-            </button>
-          </nav>
+          <ChevronDown size={16} color="#94a3b8" />
         </div>
       </div>
     </aside>
